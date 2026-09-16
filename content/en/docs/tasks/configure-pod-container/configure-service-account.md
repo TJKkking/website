@@ -58,6 +58,12 @@ When a Pod authenticates as a ServiceAccount, its level of access depends on the
 [authorization plugin and policy](/docs/reference/access-authn-authz/authorization/#authorization-modules)
 in use.
 
+The API credentials are automatically revoked when the Pod is deleted, even if
+finalizers are in place. In particular, the API credentials are revoked 60 seconds
+beyond the `.metadata.deletionTimestamp` set on the Pod (the deletion timestamp
+is typically the time that the **delete** request was accepted plus the Pod's
+termination grace period).
+
 ### Opt out of API credential automounting
 
 If you don't want the {{< glossary_tooltip text="kubelet" term_id="kubelet" >}}
@@ -186,8 +192,7 @@ token might be shorter, or could even be longer).
 
 {{< feature-state feature_gate_name="ServiceAccountTokenNodeBinding" >}}
 
-When the `ServiceAccountTokenNodeBinding` and `ServiceAccountTokenNodeBindingValidation`
-features are enabled, and using `kubectl` v1.31 or later, it is possible to create a service 
+Using `kubectl` v1.31 or later, it is possible to create a service 
 account token that is directly bound to a Node:
 
 ```shell
@@ -431,10 +436,10 @@ The JSON payload of this token follows a well defined schema - an example payloa
   "exp": 1731613413,
   "iat": 1700077413,
   "iss": "https://kubernetes.default.svc",  # matches the first value passed to the --service-account-issuer flag
-  "jti": "ea28ed49-2e11-4280-9ec5-bc3d1d84661a",  # ServiceAccountTokenJTI feature must be enabled for the claim to be present
+  "jti": "ea28ed49-2e11-4280-9ec5-bc3d1d84661a", 
   "kubernetes.io": {
     "namespace": "kube-system",
-    "node": {  # ServiceAccountTokenPodNodeInfo feature must be enabled for the API server to add this node reference claim
+    "node": {
       "name": "127.0.0.1",
       "uid": "58456cb0-dd00-45ed-b797-5578fdceaced"
     },
